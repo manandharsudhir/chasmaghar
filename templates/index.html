@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Filter</title>
+        <link rel="stylesheet" href="/static/style/design.css">
+        <script>
+            // to replace div elements
+            function loader(frame) {
+                const main = document.getElementById('loading');
+                const div = document.getElementById(frame);
+                const clone = div.cloneNode(true);
+
+                while (main.firstChild) main.firstChild.remove();
+
+                    main.appendChild(clone);
+            }
+        </script>
+    </head>
+    <body onload="loader('video')">
+        <center id="tt">
+           Filters
+        </center>
+        <center>
+        <div class="form">
+            <center>
+                <a href='/snapshot/'>
+                    <button name="Snapshot" id="SnapshotButton"><img src="/static/camera.png" width="25" height="25"></button>
+                </a>
+            </center>
+        </div>
+            <div id="loading">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </center>
+        <div  style="display:none;">
+            <div id="video">
+                <img  src="{{url_for('video')}}" class="destory" idth=35%% />
+            </div>
+        </div> 
+        <br>
+        <br>
+
+        
+        <div class="form">
+            <form method='POST' enctype="multipart/form-data">
+                    <input type="file" id="glass" name="glass" accept="image" />
+                    <label for="glass">Select Shades</label>
+                    <input type="file" id="moustache" name="moustache" accept="image" style="display:none;"/>
+                    <label for="moustache" style="display:none;">Select Moustache</label>
+                <button class="submit-btn">Apply</button>
+            </form>
+        </div>
+
+
+        <div class="form">
+            
+            <a href='/remove_glass/'>
+                <button name="Capture">Remove Shades</button>
+            </a>
+            <a href='/remove_moustache/' style="display:none;">
+                <button name="Capture">Remove Moustache</button>
+            </a>
+            <a href='/remove_all/'>
+                <button name="Capture">Remove All</button>
+            </a>
+        </div>
+       
+    </body>
+</html>
