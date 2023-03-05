@@ -1,0 +1,165 @@
+
+
+.top-bar{
+	background-color: var(--primary-color);
+}
+
+.top-bar-container{
+	justify-content: space-between !important;
+
+}
+.top-icon{
+
+	border-right: 1px solid #F1F1F1;
+}
+
+.top-bar-text{
+	color: var(--secondary-color);
+	font-size: 14px;
+}
+
+.top-bar-logo img{
+	height: inherit;
+	width: 116px;
+	z-index: 20;
+	padding-left: 24px;
+}
+
+.nav-bar{
+	background-color: var(--secondary-color);
+	padding:24px ;
+}
+
+.nav-item{
+	line-height: 1.5;
+	font-size: 15px;
+	padding: 8px;
+}
+
+.nav-bar-items{
+	width: 55%;
+	margin-left: 16px;
+}
+
+.nav-logo{
+	width: 15%;
+}
+
+.nav-logo img{
+	width: 146px;
+
+}
+
+.nav-bar-search{
+	border: solid 1px;
+	border-color: rgba(255,255,255,.3);
+}
+
+.nav-bar-search i{
+	padding-left: 20px;
+}
+.nav-bar-search input, .nav-bar-search input:focus{
+    font-size: 16px;
+    color: rgba(255,255,255,.77);
+    background-color: rgba(0,0,0,0);
+    border: none;
+    padding: 11px 8px;
+	outline: none;
+}
+
+.submit-btn{
+	display: flex;
+	justify-content: center;
+	margin-left: 8px;
+}
+
+.nav-bar .submit-btn{
+	
+	justify-content: space-around;
+	
+}
+
+.submit-btn i{
+	padding-right: 8px;
+}
+
+.menu-btn{
+	display: none;
+}
+
+
+@media (max-width: 1024px){
+	.section-container{
+		max-width: 1025px;
+		padding: 0 24px;
+	}
+	.nav-bar-search{
+		display: none;
+	}
+
+	.nav-bar-items{
+		display: none;
+	}
+	.submit-btn{
+		display: none;
+	}
+
+	.menu-btn{
+		display: block;
+		margin-left: auto;
+	}
+
+	.nav-logo{
+		width: 50%;
+	}
+	.nav-logo img{
+		width: 188px;
+	}
+
+	.main-area .section-container{
+		flex-direction: column;
+
+	}
+
+	.text-area{
+		margin-bottom: 5vh;
+		width: auto;
+		text-align: center;
+		margin-right: 0;
+	}
+
+	.image-area{
+		justify-content: center;
+		width: 100%;
+	}
+
+	.text-area .search-area{
+		width: 100%;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.unhided-btn{
+		display: flex;
+		width: 100%;
+	}
+
+	.text-area .nav-bar-search{
+		justify-content: flex-start;
+	}
+
+	.text-area .submit-btn{
+		justify-content: center;
+	}
+}
+@media (max-width: 767px){
+
+	
+
+}
+
+@media (max-width: 600px){
+	.top-bar{
+		display: none;
+	}
+}
