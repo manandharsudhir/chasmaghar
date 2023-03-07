@@ -8,6 +8,7 @@
 	<link rel="stylesheet" type="text/css" href="../static/css/style.css">
 	<link rel="stylesheet" type="text/css" href="../static/css/nav-style.css">
 	<link rel="stylesheet" type="text/css" href="../static/css/slider.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/checkout.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Details</title>
@@ -42,6 +43,33 @@
             <p class="detail-title">
                 Shipping Address
             </p>
+            <form>
+                <label for="email">Email address:</label>
+                <input type="email" id="email" name="email" required>
+              
+                <label for="first-name">First name:</label>
+                <input type="text" id="first-name" name="first-name" required>
+              
+                <label for="last-name">Last name:</label>
+                <input type="text" id="last-name" name="last-name" required>
+              
+                <label for="street-address">Street Address:</label>
+                <input type="text" id="street-address" name="street-address" required>
+              
+                <label for="country">Country:</label>
+                <select id="country" name="country" required>
+                  <option value="">--Please select--</option>
+                  <option value="usa">USA</option>
+                  <option value="canada">Canada</option>
+                  <option value="mexico">Mexico</option>
+                  <option value="mexico">Nepal</option>
+                </select>
+              
+                <label for="phone">Phone number:</label>
+                <input type="tel" id="phone" name="phone" required>
+              
+                <button type="submit">Submit</button>
+              </form>
             
         </div>
     </section>
