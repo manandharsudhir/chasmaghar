@@ -48,3 +48,26 @@
 .element-box-text-area img{
 	width: 10%;
 }
+
+.detail-title{
+	color: white;
+	font-size: 24px;
+	margin: 0;
+}
+
+.detail-price{
+	font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 0.005em;
+	margin: 0;
+	color: coral;
+}
+
+.detail-actions{
+	margin-bottom: 16px;
+}
+
+.detail-container{
+	margin-top: 32px;
+	margin-bottom: 32px;
+}
