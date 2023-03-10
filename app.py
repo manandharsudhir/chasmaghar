@@ -1,8 +1,12 @@
-from flask import Flask,render_template,flash,redirect,url_for,request
+from flask import Flask,render_template,flash,redirect,url_for,request,Response
 from addproduct import AddproductForm
 from checkout import CheckoutForm
 from flask_sqlalchemy import SQLAlchemy
 import os
+import cv2
+from backend.record import Capture,generate_video,save_image
+from backend.pre_process import preprocess
+import numpy as np
 
 app = Flask(__name__)
 app.config['SECRET_KEY']="de9e5b220476ba0aba47040eb9b2fea9"
@@ -114,6 +118,40 @@ def delete(id):
     db.session.delete(product)
     db.session.commit()
     return redirect(url_for('adminViewProducts'))
+
+@app.route("/tryglass/<int:id>")
+def tryglass(id):
+    product = Product.query.filter_by(id=id).first()
+    image = cv2.imread(product.images)
+    glass = np.array(bytearray(image),dtype=np.uint8)
+    glass = preprocess(glass)
+    try:
+        cv2.imwrite('backend/temp_images/glass.jpg',glass)
+    except:
+        pass
+    return render_template("tryon.html")
+
+
+@app.route('/video')
+def video():
+    try:
+        glass=cv2.imread('backend/temp_images/glass.jpg')
+        moustache=cv2.imread('backend/temp_images/moustache.jpg')
+    except:
+        glass=None
+        moustache=None
+    return Response(generate_video(Capture(),glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
+
+    # try:
+    #     glass=cv2.imread('backend/temp_images/glass.jpg')
+    #     moustache=cv2.imread('backend/temp_images/moustache.jpg')
+    # except:
+    #     glass=None
+    #     moustache=None
+    # return Response(generate_video(Capture(),glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
+
+
+
 
 
 
