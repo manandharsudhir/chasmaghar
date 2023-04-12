@@ -1,8 +1,49 @@
+
 {% extends "layout.html" %}
 {% block content%}
-<section class="section-container flex-box detail-container justify-content-center align-items-center">
-    <div id="video">
-        <img  src="{{url_for('video')}}" class="destory" idth=35%% />
+<section  class="section-container flex-box detail-container justify-content-center align-items-center tryon-products">
+    <div class="try-products">
+        {% for product in products %}
+					
+						<a href="/tryglass/{{product.id}}">
+							<div class="try-grid-item flex-box">
+								<div class="try-grid-img">
+									<img src="{{product.images}}">
+								</div>
+								<div class="grid-text try-grid-text">
+									<p class="primary-grid-heading">{{product.name}}</p>
+									<!-- <p class="primary-grid-subheading">March 24,2021</p>
+									 -->
+									<p class="primary-grid-price-tag">RS{{product.price}}</b>
+								</div>
+							</div>
+						</a>
+					{% endfor %}
     </div>
+   <div class="video-container">
+    <div id="video">
+        <img  src="{{url_for('video')}}" class="destory"/>
+    </div>
+
+    <center>
+
+            <button name="Snapshot" id="SnapshotButton"><img src="/static/camera.png" width="25" height="25"></button>
+  </center>
+   </div> 
+        
+   
+   <div class="snaps-container">
+
+    {% for snap in images %}
+				
+        <div class="snap-box flex-box">
+            <img src="{{snap}}">
+        </div>
+    
+{% endfor %}
+   </div> 
+   
 </section>
 {% endblock %}
+
+

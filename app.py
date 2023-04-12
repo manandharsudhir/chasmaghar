@@ -1,4 +1,4 @@
-from flask import Flask,render_template,flash,redirect,url_for,request,Response
+from flask import Flask,render_template,flash,redirect,url_for,request,Response,send_file,jsonify
 from addproduct import AddproductForm
 from checkout import CheckoutForm
 from flask_sqlalchemy import SQLAlchemy
@@ -89,11 +89,11 @@ def checkout(id):
 
 
 def saveProductImage(form_picture,file_name):
-    print("product image")
+    print(file_name)
     _,f_ext=os.path.splitext(form_picture.filename)  
            
     random_id = uuid.uuid4()  
-    picture=random_id+f_ext
+    picture=str(random_id)+f_ext
     picture_path = os.path.join(app.root_path,"static/images/products",picture)
     form_picture.save(picture_path)
     return f"../static/images/products/{picture}"
@@ -144,16 +144,36 @@ def delete(id):
 
 @app.route("/tryglass/<int:id>")
 def tryglass(id):
+    print(id)
     product = Product.query.filter_by(id=id).first()
-    image = cv2.imread(product.images)
+    file_path_str = product.images.replace('../', '')
+    
+    image_filenames = os.listdir("static/images/userimages")
+    snaps = []
+    for filename in image_filenames:
+        snaps.append("../static/images/userimages/"+filename)
+    image = cv2.imread(file_path_str)
+    print(image)
+    newproducts = Product.query.all()
+    print(newproducts)
     # glass = np.array(bytearray(image),dtype=np.uint8)
     # glass = preprocess(glass)
     try:
         cv2.imwrite('backend/temp_images/glass.jpg',image)
     except:
         pass
-    return render_template("tryon.html")
+    return render_template("tryon.html",products=newproducts,images=snaps)
 
+@app.route('/video/<int:id>')
+def videobyid(id):
+    product = Product.query.filter_by(id=id).first()
+    file_path_str = product.images.replace('../', '')
+    image = cv2.imread(file_path_str)
+    try:
+        cv2.imwrite('backend/temp_images/glass.jpg',image)
+    except:
+        pass
+    return
 
 @app.route('/video')
 def video():
@@ -164,15 +184,6 @@ def video():
         glass=None
         moustache=None
     return Response(generate_video(Capture(),glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
-
-    # try:
-    #     glass=cv2.imread('backend/temp_images/glass.jpg')
-    #     moustache=cv2.imread('backend/temp_images/moustache.jpg')
-    # except:
-    #     glass=None
-    #     moustache=None
-    # return Response(generate_video(Capture(),glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
-
 
 
 
@@ -200,6 +211,24 @@ def logout():
 @login_mananger.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/snapshot/')
+def Snapshot():
+    try:
+        glass=cv2.imread('backend/temp_images/glass.jpg')
+        moustache=cv2.imread('backend/temp_images/moustache.jpg')
+    except:
+        glass=None
+        moustache=None
+    #To Capture
+    Capture().filter(glass=glass,moustache=moustache,save=1)
+    image_filenames = os.listdir("static/images/userimages")
+    snaps = []
+    for filename in image_filenames:
+        snaps.append("../static/images/userimages/"+filename)
+    print("mf")
+    return jsonify(image_urls=snaps)
+   
 
 if __name__=="__main__":
     app.run(debug=True)
