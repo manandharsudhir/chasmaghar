@@ -226,7 +226,6 @@ def Snapshot():
     snaps = []
     for filename in image_filenames:
         snaps.append("../static/images/userimages/"+filename)
-    print("mf")
     return jsonify(image_urls=snaps)
    
 
