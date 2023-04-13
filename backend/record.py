@@ -1,13 +1,38 @@
+import json
+from backend.emotion_detect.emotion_detector import EmotionDetector
+from backend.image_object import ImageObject
+from backend.landmark_detection import LandmarkDetector
+from backend.overlay_accessory import overlay_accessory
 import cv2
 from datetime import datetime
 import dlib
 from imutils import face_utils
 import numpy as np
 import os
+import datetime
 
 camera=cv2.VideoCapture(0)
+emotion_detector = EmotionDetector()
+
+ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
+OBJECT_PATH_LOCAL = os.path.join('objects/objects.json')
+PREDICTOR_PATH_LOCAL = os.path.join(ROOT_PATH, 'model/shape_predictor_68_face_landmarks.dat')
+landmark_detector = LandmarkDetector(predictor_path=PREDICTOR_PATH_LOCAL)
+
+with open(OBJECT_PATH_LOCAL) as json_file:
+    data = json.load(json_file)
+    obj_keys = data.keys()
+
+
+
+
+cache = {
+    'overlay_obj_index': 0,
+    'emotion': []
+}
 
 class Capture():
+    RESIZE_RATIO = 1.0
     def __init__(self):
         self.video=cv2.VideoCapture(0)
         self.path=os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +49,20 @@ class Capture():
         
     def __del__(self):
         self.video.release()
+
+    def get_frame(self):
+        success, frame = self.video.read()
+        if not success:
+            return None
+
+        if (Capture.RESIZE_RATIO != 1):
+            frame = cv2.resize(frame, None, fx=Capture.RESIZE_RATIO, fy=Capture.RESIZE_RATIO)
+
+        return frame
+    
+    def get_feed(self):
+        frame = self.get_frame()
+        return frame
     
     def filter(self,glass=None,moustache=None,save=None):
         #for computation handling
@@ -107,7 +146,27 @@ class Capture():
         
 
 def generate_video(camera,glass=None,moustache=None,save=None):
+    prev_time = datetime.datetime.now()
+  
     while True:
+  
+        frame = camera.get_feed()
+
+        if len(list(obj_keys)) > 0:
+                obj_id = list(obj_keys)[cache['overlay_obj_index']]
+                # frame = face_overlay_accessory(src_img=frame, accessory_obj_id=obj_id)
+
+                current_time = datetime.datetime.now()
+                if (current_time - prev_time).total_seconds() > 0.5:
+                    prev_time = current_time
+                    emotion_frame = frame
+                    detect_result = emotion_detector.detect(emotion_frame)
+                    if detect_result:
+                        [x, y, emotion_result] = detect_result
+                        cache['emotion'].append(1 if emotion_result == "Happy" else 0)
+                    print("from emotion")
+                    print(cache)
+
         frame=camera.filter(glass=glass,moustache=moustache,save=save)
         
         yield(b'--frame\r\n'
@@ -115,3 +174,37 @@ def generate_video(camera,glass=None,moustache=None,save=None):
 
 def save_image():
     pass
+
+
+def load_accessory_obj(obj_id):
+    with open(OBJECT_PATH_LOCAL) as json_file:
+        data = json.load(json_file)
+        obj_json = data[obj_id]
+        acc_img = cv2.imread(os.path.join(ROOT_PATH, obj_json['path']), cv2.IMREAD_UNCHANGED)
+        # acc_img = cv2.imread('glasses2.png')
+        acc_info = obj_json['info']
+        return acc_img, acc_info
+
+# def face_overlay_accessory(src_img, accessory_obj_id=None):
+#     """ FACE OVERLAY WITH ACCESSORY """
+#     margin = 1.5
+#     width = 500
+#     ratio = 1
+
+#     # Load the image
+#     face_landmarks = landmark_detector.detect(img=src_img)
+#     face_obj = ImageObject(img=src_img, landmarks=face_landmarks, type='face')
+#     # Crop the image
+#     face_obj.crop(margin, ratio, width)
+
+#     glass_img, info = load_accessory_obj(obj_id=accessory_obj_id)
+
+#     accessory_obj = ImageObject(img=glass_img, landmarks=info, type='accessory', sub_type='glasses')
+
+#     if not face_obj.has_face():
+#         object_overlay_img = face_obj.data
+#     else:
+#         # Face overlay with object
+#         object_overlay_img = overlay_accessory(face_obj, accessory_obj)
+
+#     return object_overlay_img

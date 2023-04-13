@@ -1,17 +1,24 @@
+import datetime
 from flask import Flask,render_template,flash,redirect,url_for,request,Response,send_file,jsonify
 from addproduct import AddproductForm
+from backend.emotion_detect.emotion_detector import EmotionDetector
+from backend.image_object import ImageObject
+from backend.landmark_detection import LandmarkDetector
+from backend.overlay_accessory import overlay_accessory
 from checkout import CheckoutForm
 from flask_sqlalchemy import SQLAlchemy
 import os
 import cv2
-from backend.record import Capture,generate_video,save_image
+from backend.record import Capture,generate_video,save_image,cache
 from backend.pre_process import preprocess
 import numpy as np
 import uuid
 from login import LoginForm
 from flask_login import LoginManager,UserMixin, current_user,login_user,logout_user,login_required
 from flask_bcrypt import Bcrypt
+import json
 
+from camera import Camera
 app = Flask(__name__)
 app.config['SECRET_KEY']="de9e5b220476ba0aba47040eb9b2fea9"
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///chasmaghar.db'
@@ -21,6 +28,8 @@ login_mananger.login_view = 'adminlogin'
 login_mananger.login_message_category="info"
 
 db=SQLAlchemy(app)
+
+
 
 class Product(db.Model):
 
@@ -162,7 +171,7 @@ def tryglass(id):
         cv2.imwrite('backend/temp_images/glass.jpg',image)
     except:
         pass
-    return render_template("tryon.html",products=newproducts,images=snaps)
+    return render_template("tryon.html",products=newproducts,images=snaps,id=id)
 
 @app.route('/video/<int:id>')
 def videobyid(id):
@@ -177,14 +186,16 @@ def videobyid(id):
 
 @app.route('/video')
 def video():
+    
+    camera = Capture()
+   
     try:
         glass=cv2.imread('backend/temp_images/glass.jpg')
         moustache=cv2.imread('backend/temp_images/moustache.jpg')
     except:
         glass=None
         moustache=None
-    return Response(generate_video(Capture(),glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
-
+    return Response(generate_video(camera,glass=glass,moustache=moustache,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
 
 
 @app.route("/adminlogin",methods=['GET','POST'])
@@ -229,6 +240,26 @@ def Snapshot():
     print("mf")
     return jsonify(image_urls=snaps)
    
+@app.route('/emotion_feed/')
+def emotion_feed():
+    def generate():
+        with app.app_context():
+            emotion_result = cache['emotion']
+            if len(emotion_result) > 0:
+                positive_emotions = len([emotion for emotion in emotion_result if emotion == 1])
+                negative_emotions = len([emotion for emotion in emotion_result if emotion == 0])
+                cache['emotion'] = []
+                if positive_emotions > negative_emotions:
+                    resp = 'suggest'
+                else:
+                    resp = 'change'
+            else:
+                resp = 'none'
+            print("Suggest Result : ", resp)
+            yield resp
+    return Response(generate(), mimetype='text')
+
+
 
 if __name__=="__main__":
     app.run(debug=True)
