@@ -75,3 +75,7 @@
 .product-detail-image{
 	height: 30vh;
 }
+
+.hidden{
+	display: none;
+}

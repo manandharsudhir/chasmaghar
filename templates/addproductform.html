@@ -60,7 +60,7 @@
                     {{form.price(class="form-control ")}}
                 {% endif %}
             </div>
-            <div class="form-group mb-2">
+            <div class="form-group mb-2 d-none">
                 {{form.discountPrice.label(class="form-label")}}
                 
                 {% if form.discountPrice.errors %}
@@ -84,7 +84,7 @@
                     {% endfor %}
                 {% endif %}
             </div>
-            <div class="form-group mb-2">
+            <div class="form-group mb-2 d-none">
                 {{ form.checkbox }} {{ form.checkbox.label }}
             </div>
         </fieldset>

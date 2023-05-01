@@ -1,13 +1,24 @@
-from flask import Flask,render_template,flash,redirect,url_for,request
+import datetime
+from flask import Flask,render_template,flash,redirect,url_for,request,Response,send_file,jsonify
 from addproduct import AddproductForm
+from backend.emotion_detect.emotion_detector import EmotionDetector
+from backend.image_object import ImageObject
+from backend.landmark_detection import LandmarkDetector
+from backend.overlay_accessory import overlay_accessory
 from checkout import CheckoutForm
 from flask_sqlalchemy import SQLAlchemy
 import os
+import cv2
+from backend.record import Capture,generate_video,save_image,cache
+from backend.pre_process import preprocess
+import numpy as np
 import uuid
 from login import LoginForm
 from flask_login import LoginManager,UserMixin, current_user,login_user,logout_user,login_required
 from flask_bcrypt import Bcrypt
+import json
 
+from camera import Camera
 app = Flask(__name__)
 app.config['SECRET_KEY']="de9e5b220476ba0aba47040eb9b2fea9"
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///chasmaghar.db'
@@ -17,6 +28,8 @@ login_mananger.login_view = 'adminlogin'
 login_mananger.login_message_category="info"
 
 db=SQLAlchemy(app)
+
+
 
 class Product(db.Model):
 
@@ -85,11 +98,11 @@ def checkout(id):
 
 
 def saveProductImage(form_picture,file_name):
-    print("product image")
+    print(file_name)
     _,f_ext=os.path.splitext(form_picture.filename)  
            
     random_id = uuid.uuid4()  
-    picture=random_id+f_ext
+    picture=str(random_id)+f_ext
     picture_path = os.path.join(app.root_path,"static/images/products",picture)
     form_picture.save(picture_path)
     return f"../static/images/products/{picture}"
@@ -138,6 +151,51 @@ def delete(id):
     db.session.commit()
     return redirect(url_for('adminViewProducts'))
 
+@app.route("/tryglass/<int:id>")
+def tryglass(id):
+    print(id)
+    product = Product.query.filter_by(id=id).first()
+    file_path_str = product.images.replace('../', '')
+    
+    image_filenames = os.listdir("static/images/userimages")
+    snaps = []
+    for filename in image_filenames:
+        snaps.append("../static/images/userimages/"+filename)
+    image = cv2.imread(file_path_str)
+    print(image)
+    newproducts = Product.query.all()
+    print(newproducts)
+    # glass = np.array(bytearray(image),dtype=np.uint8)
+    # glass = preprocess(glass)
+    try:
+        cv2.imwrite('backend/temp_images/glass.jpg',image)
+    except:
+        pass
+    return render_template("tryon.html",products=newproducts,images=snaps,id=id)
+
+@app.route('/video/<int:id>')
+def videobyid(id):
+    product = Product.query.filter_by(id=id).first()
+    file_path_str = product.images.replace('../', '')
+    image = cv2.imread(file_path_str)
+    try:
+        cv2.imwrite('backend/temp_images/glass.jpg',image)
+    except:
+        pass
+    return
+
+@app.route('/video')
+def video():
+    
+    camera = Capture()
+   
+    try:
+        glass=cv2.imread('backend/temp_images/glass.jpg')
+    except:
+        glass=None
+    return Response(generate_video(camera,glass=glass,save=None),mimetype='multipart/x-mixed-replace;boundary=frame')
+
+
 @app.route("/adminlogin",methods=['GET','POST'])
 def adminlogin():
     if current_user.is_authenticated:
@@ -162,6 +220,42 @@ def logout():
 @login_mananger.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/snapshot/')
+def Snapshot():
+    try:
+        glass=cv2.imread('backend/temp_images/glass.jpg')
+    except:
+        glass=None
+    #To Capture
+    Capture().filter(glass=glass,save=1)
+    image_filenames = os.listdir("static/images/userimages")
+    snaps = []
+    for filename in image_filenames:
+        snaps.append("../static/images/userimages/"+filename)
+    print("mf")
+    return jsonify(image_urls=snaps)
+   
+@app.route('/emotion_feed/')
+def emotion_feed():
+    def generate():
+        with app.app_context():
+            emotion_result = cache['emotion']
+            if len(emotion_result) > 0:
+                positive_emotions = len([emotion for emotion in emotion_result if emotion == 1])
+                negative_emotions = len([emotion for emotion in emotion_result if emotion == 0])
+                cache['emotion'] = []
+                if positive_emotions > negative_emotions:
+                    resp = 'suggest'
+                else:
+                    resp = 'change'
+            else:
+                resp = 'none'
+            print("Suggest Result : ", resp)
+            yield resp
+    return Response(generate(), mimetype='text')
+
+
 
 if __name__=="__main__":
     app.run(debug=True)
